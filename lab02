@@ -1,0 +1,47 @@
+SELECT nom_empregado FROM bd_empresa..empregado
+WHERE sig_uf = 'MG';
+
+SELECT nom_empregado, dat_nascimento FROM bd_empresa..empregado
+ORDER BY dat_nascimento ASC;
+
+SELECT nom_projeto, nom_local FROM bd_empresa..projeto;
+
+SELECT sig_uf, nom_cidade FROM bd_empresa..empregado
+GROUP BY sig_uf, nom_cidade;
+SELECT DISTINCT sig_uf, nom_cidade FROM bd_empresa..empregado;
+
+SELECT * FROM bd_empresa..departamento
+WHERE dat_inicio_gerente >= CAST('20070101' AS SMALLDATETIME);
+
+SELECT nom_empregado, val_salario FROM bd_empresa..empregado
+ORDER BY val_salario DESC;
+
+SELECT nom_dependente, dsc_parentesco FROM bd_empresa..dependente
+WHERE sex_dependente = 'M';
+
+SELECT cod_depto, nom_depto, num_matricula_gerente, dat_inicio_gerente FROM bd_empresa..departamento
+WHERE num_matricula_gerente IS NULL;
+
+SELECT num_matricula, nom_empregado, dat_nascimento, dsc_endereco, nom_cidade, sig_uf, sex_empregado, val_salario, num_matricula, cod_depto
+FROM bd_empresa..empregado
+WHERE sex_empregado = 'F'
+AND val_salario >= 1500;
+
+SELECT nom_projeto FROM bd_empresa..projeto
+WHERE cod_depto = 2;
+
+SELECT cod_projeto, nom_projeto FROM bd_empresa..projeto
+WHERE nom_local IN ('BH', 'RJ', 'SP');
+
+
+SELECT nom_projeto FROM bd_empresa..projeto
+WHERE nom_projeto LIKE '%novo%'
+OR nom_projeto LIKE '%nova%'
+
+SELECT nom_projeto FROM bd_empresa..projeto
+WHERE nom_projeto LIKE 'criar%'
+OR nom_projeto LIKE '%2005';
+
+SELECT TOP 1 nom_empregado, val_salario FROM bd_empresa..empregado
+WHERE sig_uf = 'MG'
+ORDER BY val_salario DESC;
