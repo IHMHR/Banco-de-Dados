@@ -1,0 +1,22 @@
+USE [master];
+GO
+
+CREATE DATABASE [AAI];
+GO
+
+USE [AAI];
+GO
+
+CREATE SCHEMA [Automovel];
+GO
+
+CREATE SCHEMA [Localidade];
+GO
+
+CREATE SCHEMA [Comercio];
+GO
+
+IF EXISTS(SELECT 1 FROM sys.tables WHERE name = N'')
+BEGIN
+	DROP TABLE ;
+END
