@@ -34,6 +34,6 @@
 
 17) SELECT e.nom_empregado, d.nom_depto, g.nom_empregado 'gerente', num_horas, nom_projeto, nom_depto FROM bd_empresa..empregado e INNER JOIN bd_empresa..departamento d ON e.cod_depto = d.cod_depto INNER JOIN bd_empresa..empregado g ON g.num_matricula = d.num_matricula_gerente INNER JOIN bd_empresa..projeto p ON p.cod_depto = d.cod_depto INNER JOIN bd_empresa..alocacao a ON a.num_matricula = e.num_matricula AND a.cod_projeto = p.cod_projeto;
 
-18) 
+18) SELECT e.nom_empregado, d.nom_depto, g.nom_empregado, num_horas, nom_projeto, dp.nom_depto FROM bd_empresa..empregado e INNER JOIN bd_empresa..departamento d ON e.cod_depto = d.cod_depto INNER JOIN bd_empresa..empregado g ON g.num_matricula = d.num_matricula_gerente INNER JOIN bd_empresa..projeto p ON p.cod_depto = d.cod_depto INNER JOIN bd_empresa..alocacao a ON a.cod_projeto = p.cod_projeto INNER JOIN bd_empresa..departamento dp ON p.cod_depto = dp.cod_depto
 
-19) 
+19) SELECT e.nom_empregado, s.nom_empregado supervisor FROM bd_empresa..empregado e LEFT JOIN bd_empresa..empregado s ON s.num_matricula = e.num_matricula_supervisor AND s.nom_empregado NOT LIKE 'José%';
