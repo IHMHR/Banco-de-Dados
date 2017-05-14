@@ -26,13 +26,13 @@
 
 13) SELECT num_matricula, nom_empregado FROM bd_empresa..empregado e FULL OUTER JOIN bd_empresa..departamento d ON e.num_matricula = d.num_matricula_gerente WHERE num_matricula_gerente IS NOT NULL;
 
-14) 
+14) SELECT e.num_matricula, e.nom_empregado, d.nom_depto, d.num_matricula_gerente, ger.nom_empregado AS gerente  FROM bd_empresa..empregado e INNER JOIN bd_empresa..departamento d ON e.cod_depto = d.cod_depto INNER JOIN bd_empresa..empregado ger ON ger.num_matricula = d.num_matricula_gerente;
 
-15) SELECT nom_depto, nom_empregado gerente, nom_local FROM departamento d INNER JOIN empregado e ON d.num_matricula_gerente = e.num_matricula INNER JOIN departamento_local dl ON d.cod_depto = dl.cod_depto;
+15) SELECT nom_depto, nom_empregado gerente, nom_local FROM bd_empresa..departamento d INNER JOIN bd_empresa..empregado e ON d.num_matricula_gerente = e.num_matricula INNER JOIN bd_empresa..departamento_local dl ON dl.cod_depto = d.cod_depto;
 
-*****16) SELECT nom_projeto, d.nom_depto 'Depto que controla o projeto', nom_empregado, num_horas 'Horas alocadas' FROM projeto p INNER JOIN departamento d ON d.cod_depto = p.cod_depto INNER JOIN empregado e ON e.cod_depto = d.cod_depto INNER JOIN alocacao a ON a.num_matricula = e.num_matricula AND a.cod_projeto = p.cod_projeto;
+16) SELECT nom_projeto, d.nom_depto 'Depto que controla o projeto', nom_empregado, num_horas 'Horas alocadas' FROM bd_empresa..projeto p INNER JOIN bd_empresa..departamento d ON d.cod_depto = p.cod_depto INNER JOIN bd_empresa..empregado e ON e.cod_depto = d.cod_depto INNER JOIN bd_empresa..alocacao a ON a.num_matricula = e.num_matricula AND a.cod_projeto = p.cod_projeto;
 
-*****17) SELECT e.nom_empregado, d.nom_depto, 1 'gerente', num_horas, nom_projeto, nom_depto FROM empregado e INNER JOIN departamento d ON e.cod_depto = d.cod_depto INNER JOIN empregado g ON g.num_matricula = d.num_matricula_gerente INNER JOIN projeto ON p.cod_depto = d.cod_depto INNER JOIN alocacao a ON a.num_matricula = e.num_matricula AND a.cod_projeto = p.cod_projeto;
+17) SELECT e.nom_empregado, d.nom_depto, g.nom_empregado 'gerente', num_horas, nom_projeto, nom_depto FROM bd_empresa..empregado e INNER JOIN bd_empresa..departamento d ON e.cod_depto = d.cod_depto INNER JOIN bd_empresa..empregado g ON g.num_matricula = d.num_matricula_gerente INNER JOIN bd_empresa..projeto p ON p.cod_depto = d.cod_depto INNER JOIN bd_empresa..alocacao a ON a.num_matricula = e.num_matricula AND a.cod_projeto = p.cod_projeto;
 
 18) 
 
