@@ -1,6 +1,12 @@
 USE [master];
 GO
 
+IF EXISTS(SELECT 1 FROM sys.databases WHERE name = N'AAI')
+BEGIN
+	ALTER DATABASE [AAI] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+	DROP DATABASE [AAI];
+END
+
 CREATE DATABASE [AAI];
 GO
 
@@ -133,7 +139,7 @@ bairro VARCHAR(50) NOT NULL,
 cidade_idcidade INT NOT NULL,
 
 CONSTRAINT pk_endereco PRIMARY KEY CLUSTERED (idendereco),
-CONSTRAINT fk_cidade FOREIGN KEY (cidade_idcidade) REFERENCES Localidade.cidade(cidade)
+CONSTRAINT fk_cidade FOREIGN KEY (cidade_idcidade) REFERENCES Localidade.cidade(idcidade)
 ) ON [PRIMARY]
 
 IF EXISTS(SELECT 1 FROM sys.tables WHERE name = N'loja')
@@ -202,4 +208,20 @@ valor DECIMAL(12,2) NOT NULL,
 quantidade TINYINT NOT NULL
 
 CONSTRAINT pk_pagamento PRIMARY KEY CLUSTERED (idpagamento),
+) ON [PRIMARY]
+
+IF EXISTS(SELECT 1 FROM sys.tables WHERE name = N'cliente')
+BEGIN
+	DROP TABLE Comercio.cliente;
+END
+
+CREATE TABLE Comercio.cliente (
+idcliente INT IDENTITY NOT NULL,
+cpf CHAR(11) NOT NULL,
+nome VARCHAR(5) NOT NULL,
+endereco_idendereco INT NOT NULL,
+
+CONSTRAINT pk_cliente PRIMARY KEY CLUSTERED (idcliente),
+CONSTRAINT cpf_unico UNIQUE NONCLUSTERED (cpf),
+CONSTRAINT fk_endereco_cliente FOREIGN KEY (endereco_idendereco) REFERENCES Localidade.endereco(idendereco)
 ) ON [PRIMARY]
