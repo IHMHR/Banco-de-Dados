@@ -10,6 +10,9 @@ END
 CREATE DATABASE [AAI];
 GO
 
+ALTER DATABASE [AAI] SET COMPATIBILITY_LEVEL = 100;
+GO
+
 USE [AAI];
 GO
 
@@ -121,8 +124,10 @@ END
 CREATE TABLE Localidade.cidade (
 idcidade INT IDENTITY NOT NULL,
 cidade VARCHAR(50) NOT NULL,
+estado_idestado INT NOT NULL,
 
 CONSTRAINT pk_cidade PRIMARY KEY CLUSTERED (idcidade),
+CONSTRAINT fk_estado_cidade FOREIGN KEY (estado_idestado) REFERENCES Localidade.estado(idestado)
 ) ON [PRIMARY];
 
 IF EXISTS(SELECT 1 FROM sys.tables WHERE name = N'endereco')
@@ -164,8 +169,10 @@ END
 CREATE TABLE Comercio.vendedor (
 idvendedor INT IDENTITY NOT NULL,
 nome VARCHAR(100) NOT NULL,
+loja_idloja INT NOT NULL,
 
-CONSTRAINT pk_vendedor PRIMARY KEY CLUSTERED (idvendedor)
+CONSTRAINT pk_vendedor PRIMARY KEY CLUSTERED (idvendedor),
+CONSTRAINT fk_loja_vendedor FOREIGN KEY (loja_idloja) REFERENCES Comercio.loja(idloja)
 ) ON [PRIMARY]
 
 IF EXISTS(SELECT 1 FROM sys.tables WHERE name = N'forma_pagamento')
@@ -181,21 +188,6 @@ CONSTRAINT pk_forma_pagamento PRIMARY KEY CLUSTERED (idforma_pagamento),
 CONSTRAINT forma_pagamento_unica UNIQUE NONCLUSTERED (forma_pagamento)
 ) ON [PRIMARY]
 
-IF EXISTS(SELECT 1 FROM sys.tables WHERE name = N'item_pagamento')
-BEGIN
-	DROP TABLE Comercio.item_pagamento;
-END
-
-CREATE TABLE Comercio.item_pagamento (
-iditem_pagamento INT IDENTITY NOT NULL,
-item_pagamento VARCHAR(50) NOT NULL,
-forma_pagamento_idforma_pagamento INT NOT NULL,
-
-CONSTRAINT pk_item_pagamento PRIMARY KEY CLUSTERED (iditem_pagamento),
-CONSTRAINT fk_forma_pagamento FOREIGN KEY (forma_pagamento_idforma_pagamento) REFERENCES Comercio.forma_pagamento(idforma_pagamento),
-CONSTRAINT item_pagamento_unico UNIQUE NONCLUSTERED (item_pagamento)
-) ON [PRIMARY]
-
 IF EXISTS(SELECT 1 FROM sys.tables WHERE name = N'pagamento')
 BEGIN
 	DROP TABLE Comercio.pagamento;
@@ -205,9 +197,26 @@ CREATE TABLE Comercio.pagamento (
 idpagamento INT IDENTITY NOT NULL,
 sequencia TINYINT NOT NULL,
 valor DECIMAL(12,2) NOT NULL,
-quantidade TINYINT NOT NULL
+quantidade TINYINT NOT NULL,
 
 CONSTRAINT pk_pagamento PRIMARY KEY CLUSTERED (idpagamento),
+) ON [PRIMARY]
+
+IF EXISTS(SELECT 1 FROM sys.tables WHERE name = N'item_pagamento')
+BEGIN
+	DROP TABLE Comercio.item_pagamento;
+END
+
+CREATE TABLE Comercio.item_pagamento (
+iditem_pagamento INT IDENTITY NOT NULL,
+item_pagamento VARCHAR(50) NOT NULL,
+forma_pagamento_idforma_pagamento INT NOT NULL,
+pagamento_idpagamento INT NOT NULL,
+
+CONSTRAINT pk_item_pagamento PRIMARY KEY CLUSTERED (iditem_pagamento),
+CONSTRAINT fk_forma_pagamento FOREIGN KEY (forma_pagamento_idforma_pagamento) REFERENCES Comercio.forma_pagamento(idforma_pagamento),
+CONSTRAINT item_pagamento_unico UNIQUE NONCLUSTERED (item_pagamento),
+CONSTRAINT fk_pagamento_itens FOREIGN KEY (pagamento_idpagamento) REFERENCES Comercio.pagamento(idpagamento)
 ) ON [PRIMARY]
 
 IF EXISTS(SELECT 1 FROM sys.tables WHERE name = N'cliente')
@@ -224,4 +233,26 @@ endereco_idendereco INT NOT NULL,
 CONSTRAINT pk_cliente PRIMARY KEY CLUSTERED (idcliente),
 CONSTRAINT cpf_unico UNIQUE NONCLUSTERED (cpf),
 CONSTRAINT fk_endereco_cliente FOREIGN KEY (endereco_idendereco) REFERENCES Localidade.endereco(idendereco)
+) ON [PRIMARY]
+
+IF EXISTS(SELECT 1 FROM sys.tables WHERE name = N'venda')
+BEGIN
+	DROP TABLE Comercio.venda;
+END
+
+CREATE TABLE Comercio.venda (
+idvenda INT IDENTITY NOT NULL,
+[data] DATETIME2 NOT NULL DEFAULT GETDATE(),
+desconto DECIMAL(5,2) NOT NULL DEFAULT 0.0,
+cliente_idcliente INT NOT NULL,
+veiculo_idveiculo INT NOT NULL,
+vendedor_idvendedor INT NOT NULL,
+pagamento_idpagamento INT NOT NULL,
+
+CONSTRAINT pk_venda PRIMARY KEY CLUSTERED (idvenda),
+CONSTRAINT venda_no_dia CHECK (data >= GETDATE()),
+CONSTRAINT fk_cliente_venda FOREIGN KEY (cliente_idcliente) REFERENCES Comercio.cliente(idcliente),
+CONSTRAINT fk_veiculo_venda FOREIGN KEY (veiculo_idveiculo) REFERENCES Automovel.veiculo(idveiculo),
+CONSTRAINT fk_vendedor_venda FOREIGN KEY (vendedor_idvendedor) REFERENCES Comercio.vendedor(idvendedor),
+CONSTRAINT fk_pagemento_venda FOREIGN KEY (pagamento_idpagamento) REFERENCES Comercio.pagamento(idpagamento)
 ) ON [PRIMARY]
