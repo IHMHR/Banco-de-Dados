@@ -75,6 +75,9 @@ WHERE NOT EXISTS (SELECT e.num_matricula FROM dependente d WHERE e.num_matricula
 AND e.num_matricula IN (SELECT e1.num_matricula_supervisor FROM empregado e1);
 
 -- Questão 9
+SELECT d.nom_depto FROM departamento d
+WHERE (SELECT COUNT(1) FROM empregado e WHERE e.cod_depto = d.cod_depto) > 0
+AND d.cod_depto IN (SELECT p.cod_depto FROM projeto p WHERE p.cod_depto = d.cod_depto)
 
 -- Questão 10
 SELECT nom_empregado, val_salario, sig_uf FROM empregado
