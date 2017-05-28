@@ -25,19 +25,18 @@ GO
 CREATE SCHEMA [Comercio];
 GO
 
-IF EXISTS(SELECT 1 FROM sys.tables WHERE name = N'modelo')
-BEGIN
-	DROP TABLE Automovel.modelo;
-END
-
-CREATE TABLE Automovel.modelo (
-idmodelo INT IDENTITY NOT NULL,
-modelo VARCHAR(50) NOT NULL,
-
-CONSTRAINT pk_modelo PRIMARY KEY CLUSTERED (idmodelo),
-CONSTRAINT modelo_unico UNIQUE NONCLUSTERED (modelo)
-) ON [PRIMARY];
-
+CREATE OR ALTER FUNCTION Automovel.validarAno (@ano INT)
+RETURNS BIT
+WITH SCHEMABINDING
+AS
+	BEGIN
+		RETURN CASE
+			       WHEN @ano > CAST(DATEPART(YEAR, GETDATE()) AS INT) + 1 THEN 0
+			       WHEN @ano <= CAST(DATEPART(YEAR, GETDATE()) AS INT) + 1 THEN 1
+			       ELSE 0
+			   END;
+	END;
+GO
 
 IF EXISTS(SELECT 1 FROM sys.tables WHERE name = N'marca')
 BEGIN
@@ -47,11 +46,24 @@ END
 CREATE TABLE Automovel.marca (
 idmarca INT IDENTITY NOT NULL,
 marca VARCHAR(50) NOT NULL,
-modelo_idmodelo INT NOT NULL,
 
 CONSTRAINT pk_marca PRIMARY KEY CLUSTERED (idmarca),
-CONSTRAINT fk_modelo FOREIGN KEY (modelo_idmodelo) REFERENCES Automovel.modelo(idmodelo),
 CONSTRAINT marca_unica UNIQUE NONCLUSTERED (marca)
+) ON [PRIMARY];
+
+IF EXISTS(SELECT 1 FROM sys.tables WHERE name = N'modelo')
+BEGIN
+	DROP TABLE Automovel.modelo;
+END
+
+CREATE TABLE Automovel.modelo (
+idmodelo INT IDENTITY NOT NULL,
+modelo VARCHAR(50) NOT NULL,
+marca_idmarca INT NOT NULL,
+
+CONSTRAINT pk_modelo PRIMARY KEY CLUSTERED (idmodelo),
+CONSTRAINT modelo_unico UNIQUE NONCLUSTERED (modelo),
+CONSTRAINT fk_marca_modelo FOREIGN KEY (marca_idmarca) REFERENCES Automovel.marca(idmarca)
 ) ON [PRIMARY];
 
 IF EXISTS(SELECT 1 FROM sys.tables WHERE name = N'veiculo')
@@ -63,14 +75,15 @@ CREATE TABLE Automovel.veiculo (
 idveiculo INT IDENTITY NOT NULL,
 chassi VARCHAR(50) NOT NULL,
 placa CHAR(7) NOT NULL,
-ano_fabricacao DATE NOT NULL,
+ano_fabricacao INT NOT NULL,
 valor DECIMAL(10,2) NOT NULL,
 marca_idmarca INT NOT NULL
 
 CONSTRAINT pk_veiculo PRIMARY KEY CLUSTERED (idveiculo),
 CONSTRAINT fk_marca FOREIGN KEY (marca_idmarca) REFERENCES Automovel.marca(idmarca),
 CONSTRAINT chassi_unico UNIQUE NONCLUSTERED (chassi),
-CONSTRAINT placa_unica UNIQUE NONCLUSTERED (placa)
+CONSTRAINT placa_unica UNIQUE NONCLUSTERED (placa),
+CONSTRAINT validar_ano CHECK (Automovel.validarAno(ano_fabricacao) = 1)
 ) ON [PRIMARY];
 
 IF EXISTS(SELECT 1 FROM sys.tables WHERE name = N'opcionais')
@@ -256,3 +269,20 @@ CONSTRAINT fk_veiculo_venda FOREIGN KEY (veiculo_idveiculo) REFERENCES Automovel
 CONSTRAINT fk_vendedor_venda FOREIGN KEY (vendedor_idvendedor) REFERENCES Comercio.vendedor(idvendedor),
 CONSTRAINT fk_pagemento_venda FOREIGN KEY (pagamento_idpagamento) REFERENCES Comercio.pagamento(idpagamento)
 ) ON [PRIMARY]
+
+
+INSERT Automovel.marca (marca) VALUES ('FIAT'),('Honda'),('Renault'),('Peugeot'),('Ferrari'),('BMW'),('Chevrolet'),('Volkswagen');
+
+INSERT Automovel.modelo (modelo, marca_idmarca) VALUES ('Palio', 1),('City', 2),('Celta', 7),('S10', 7),('Gol', 8),('Clio', 3),('Novo Uno', 1);
+
+INSERT Automovel.veiculo (chassi, placa, ano_fabricacao, valor, marca_idmarca)
+VALUES ('1234567890', 'PLA1234', 1996, 19999.99, 2), ('0987654321', 'PLA9876', 2017, 35000.00, 5),
+('1029384756', 'CAR0007', 2007, 8500.00, 1), ('4783920156', 'ABC1234', 2010, 15000.00, 6),
+('4321567098', 'ZZZ9999', 1870, 120000.00, 3), ('42702490244', 'LUC6666', 1966, 66600.00, 4);
+
+INSERT Automovel.opcionais (opcionais) VALUES ('DVD Player'),('Banco de Couro'),('Alarme'),('Vidro Elétrico'),('Som MP3'),('Kit Primeiros Socorros'),('Ar Condicionado');
+
+INSERT Automovel.veiculos_has_opcionais (veiculo_idveiculo, opcionais_idopcionais)
+VALUES (1, 1),(1, 2),(2, 1),(3, 1),(3, 4),(5, 1),(5, 2),(5, 3),(5, 4),(6, 1),(6, 4);
+
+INSERT Localidade.estado (estado, uf) VALUES ('Minas Gerais', 'MG'),('Goias', 'GO'),('São Paulo', 'SP'),('Rio de Janeiro', 'RJ'),('Mato Grosso', 'MT'),('Bahia', 'BA'),('Santa Catarina', 'SC'),('Alagoas', 'AL');
