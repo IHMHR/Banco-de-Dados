@@ -173,7 +173,8 @@ loja VARCHAR(25) NOT NULL,
 endereco_idendereco INT NOT NULL,
 
 CONSTRAINT pk_loja PRIMARY KEY CLUSTERED (idloja),
-CONSTRAINT loja_unica UNIQUE NONCLUSTERED (loja)
+CONSTRAINT loja_unica UNIQUE NONCLUSTERED (loja),
+CONSTRAINT fk_endereco_loja FOREIGN KEY (endereco_idendereco) REFERENCES Localidade.endereco(idendereco)
 ) ON [PRIMARY]
 
 IF EXISTS(SELECT 1 FROM sys.tables WHERE name = N'vendedor')
@@ -288,3 +289,7 @@ INSERT Automovel.veiculos_has_opcionais (veiculo_idveiculo, opcionais_idopcionai
 VALUES (1, 1),(1, 2),(2, 1),(3, 1),(3, 4),(5, 1),(5, 2),(5, 3),(5, 4),(6, 1),(6, 4);
 
 INSERT Localidade.estado (estado, uf) VALUES ('Minas Gerais', 'MG'),('Goias', 'GO'),('São Paulo', 'SP'),('Rio de Janeiro', 'RJ'),('Mato Grosso', 'MT'),('Bahia', 'BA'),('Santa Catarina', 'SC'),('Alagoas', 'AL');
+
+INSERT Localidade.cidade (cidade, estado_idestado) VALUES ('Betim', 1),('Belo Horizonte', 1),('São Paulo', 3),('Rio de Janeiro', 4),('Salvador', 6),('Buriti Alegre', 2),('Cajuru', 3),('Maceió', 8),('Feira de Santana', 6);
+
+INSERT Localidade.endereco (cep, logradouro, numero, bairro, cidade_idcidade) VALUES ('30840760', 'Rua dos Securitários', 115, 'Alípio de Melo', 2);
