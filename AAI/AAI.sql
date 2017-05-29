@@ -273,7 +273,7 @@ CONSTRAINT fk_vendedor_venda FOREIGN KEY (vendedor_idvendedor) REFERENCES Comerc
 CONSTRAINT fk_pagemento_venda FOREIGN KEY (pagamento_idpagamento) REFERENCES Comercio.pagamento(idpagamento)
 ) ON [PRIMARY]
 
-
+SET NOCOUNT ON;
 INSERT Automovel.marca (marca) VALUES ('FIAT'),('Honda'),('Renault'),('Peugeot'),('Ferrari'),('BMW'),('Chevrolet'),('Volkswagen');
 
 INSERT Automovel.modelo (modelo, marca_idmarca) VALUES ('Palio', 1),('City', 2),('Celta', 7),('S10', 7),('Gol', 8),('Clio', 3),('Novo Uno', 1);
@@ -292,4 +292,20 @@ INSERT Localidade.estado (estado, uf) VALUES ('Minas Gerais', 'MG'),('Goias', 'G
 
 INSERT Localidade.cidade (cidade, estado_idestado) VALUES ('Betim', 1),('Belo Horizonte', 1),('São Paulo', 3),('Rio de Janeiro', 4),('Salvador', 6),('Buriti Alegre', 2),('Cajuru', 3),('Maceió', 8),('Feira de Santana', 6);
 
-INSERT Localidade.endereco (cep, logradouro, numero, bairro, cidade_idcidade) VALUES ('30840760', 'Rua dos Securitários', 115, 'Alípio de Melo', 2);
+INSERT Localidade.endereco (cep, logradouro, numero, bairro, cidade_idcidade) 
+VALUES ('30840760', 'Rua dos Securitários', 115, 'Alípio de Melo', 2),
+('32600140', 'Avenida Nossa Senhora do Carmo', 543, 'Centro', 1),
+('01310200', 'Avenida Paulista', 1578, 'Bela Vista', 3),
+('57036010', 'Rua Doutor Aristeu Lopes', 0, 'Jatiúca', 8),
+('44003276', 'Rua Comandante Almiro', 46, 'Serraria Brasil', 9),
+('20540005', 'Rua Barão de Mesquista', 141, 'Tijuca', 4);
+
+INSERT Comercio.loja (loja, endereco_idendereco) VALUES ('Matriz', 1),('Filial 01', 2),('Filial 02', 3),('Filial RJ', 6),('Filial Nova', 5);
+
+INSERT Comercio.vendedor (nome, loja_idloja) 
+VALUES ('Igor Henrique Martinelli de Heredia Ramos', 1),
+('Silvia Salim', 1),
+('Ana Paula Oliveira', 2),
+('Felipe Silveira dos Santos', 3),
+('Jean Carlos Silva', 3),
+('Marta Bruna Nogueira', 4);
