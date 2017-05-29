@@ -215,7 +215,7 @@ sequencia TINYINT NOT NULL,
 valor DECIMAL(12,2) NOT NULL,
 quantidade TINYINT NOT NULL,
 
-CONSTRAINT pk_pagamento PRIMARY KEY CLUSTERED (idpagamento),
+CONSTRAINT pk_pagamento PRIMARY KEY CLUSTERED (idpagamento)
 ) ON [PRIMARY]
 
 IF EXISTS(SELECT 1 FROM sys.tables WHERE name = N'item_pagamento')
@@ -309,3 +309,8 @@ VALUES ('Igor Henrique Martinelli de Heredia Ramos', 1),
 ('Felipe Silveira dos Santos', 3),
 ('Jean Carlos Silva', 3),
 ('Marta Bruna Nogueira', 4);
+
+INSERT Comercio.forma_pagamento (forma_pagamento) VALUES ('Dinheiro'),('Cartão de Crédito'),('Cartão de Débito'),('Cheque'),('Vale Alimentação'),('Empréstimo Bancário');
+
+INSERT Comercio.pagamento (sequencia, valor, quantidade) VALUES (1, 1000.00, 1),(2, 500.00, 5),(3, 100.00, 10),
+(1, 1000.00, 5),(2, 500.00, 1),(3, 350.00, 24);
