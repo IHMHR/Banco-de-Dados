@@ -31,10 +31,12 @@ WITH SCHEMABINDING
 AS
 	BEGIN
 		RETURN CASE
+			       WHEN LEN(@ano) <> 4 THEN 0
+			       WHEN @ano < 1600 THEN 0
 			       WHEN @ano > CAST(DATEPART(YEAR, GETDATE()) AS INT) + 1 THEN 0
 			       WHEN @ano <= CAST(DATEPART(YEAR, GETDATE()) AS INT) + 1 THEN 1
 			       ELSE 0
-			   END;
+		       END;
 	END;
 GO
 
@@ -280,9 +282,9 @@ VALUES ('1234567890', 'PLA1234', 1996, 19999.99, 2), ('0987654321', 'PLA9876', 2
 ('1029384756', 'CAR0007', 2007, 8500.00, 1), ('4783920156', 'ABC1234', 2010, 15000.00, 6),
 ('4321567098', 'ZZZ9999', 1870, 120000.00, 3), ('42702490244', 'LUC6666', 1966, 66600.00, 4);
 
-INSERT Automovel.opcionais (opcionais) VALUES ('DVD Player'),('Banco de Couro'),('Alarme'),('Vidro Elétrico'),('Som MP3'),('Kit Primeiros Socorros'),('Ar Condicionado');
+INSERT Automovel.opcionais (opcionais) VALUES ('DVD Player'),('Banco de Couro'),('Alarme'),('Vidro ElÃ©trico'),('Som MP3'),('Kit Primeiros Socorros'),('Ar Condicionado');
 
 INSERT Automovel.veiculos_has_opcionais (veiculo_idveiculo, opcionais_idopcionais)
 VALUES (1, 1),(1, 2),(2, 1),(3, 1),(3, 4),(5, 1),(5, 2),(5, 3),(5, 4),(6, 1),(6, 4);
 
-INSERT Localidade.estado (estado, uf) VALUES ('Minas Gerais', 'MG'),('Goias', 'GO'),('São Paulo', 'SP'),('Rio de Janeiro', 'RJ'),('Mato Grosso', 'MT'),('Bahia', 'BA'),('Santa Catarina', 'SC'),('Alagoas', 'AL');
+INSERT Localidade.estado (estado, uf) VALUES ('Minas Gerais', 'MG'),('Goias', 'GO'),('SÃ£o Paulo', 'SP'),('Rio de Janeiro', 'RJ'),('Mato Grosso', 'MT'),('Bahia', 'BA'),('Santa Catarina', 'SC'),('Alagoas', 'AL');
