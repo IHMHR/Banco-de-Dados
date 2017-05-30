@@ -40,6 +40,20 @@ AS
 	END;
 GO
 
+CREATE OR ALTER FUNCTION Comercio.validarDataVenda (@ano INT)
+RETURNS BIT
+WITH SCHEMABINDING
+AS
+	BEGIN
+		RETURN CASE 
+			       WHEN LEN(@ano) <> 4 THEN 0
+				   WHEN @ano < DATEADD(DAY, -7, GETDATE()) THEN 0 -- Máximo 7 dias atrás
+				   WHEN @ano > DATEADD(DAY, 7, GETDATE()) THEN 0 -- Máximo 7 dias para frente
+				   ELSE 1
+			   END;
+	END;
+GO
+
 IF EXISTS(SELECT 1 FROM sys.tables WHERE name = N'marca')
 BEGIN
 	DROP TABLE Automovel.marca;
@@ -279,7 +293,7 @@ vendedor_idvendedor INT NOT NULL,
 pagamento_idpagamento INT NOT NULL,
 
 CONSTRAINT pk_venda PRIMARY KEY CLUSTERED (idvenda),
-CONSTRAINT venda_no_dia CHECK (data >= GETDATE()),
+CONSTRAINT venda_no_dia CHECK (Comercio.validarDataVenda([data]) = 1),
 CONSTRAINT fk_cliente_venda FOREIGN KEY (cliente_idcliente) REFERENCES Comercio.cliente(idcliente),
 CONSTRAINT fk_veiculo_venda FOREIGN KEY (veiculo_idveiculo) REFERENCES Automovel.veiculo(idveiculo),
 CONSTRAINT fk_vendedor_venda FOREIGN KEY (vendedor_idvendedor) REFERENCES Comercio.vendedor(idvendedor),
@@ -348,3 +362,7 @@ INSERT Comercio.venda ([data], cliente_idcliente, desconto, pagamento_idpagament
 (DATEADD(DAY, 5, GETDATE()), 5, 4, 3, 2, 1),
 (DATEADD(DAY, 7, GETDATE()), 2, 4, 1, 3, 5),
 (GETDATE(), 1, 2, 3, 4, 5);
+
+SELECT * FROM Comercio.venda v
+Comercio.item_pagamento ip
+INNER JOIN 
