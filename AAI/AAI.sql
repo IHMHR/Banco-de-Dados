@@ -211,11 +211,23 @@ END
 
 CREATE TABLE Comercio.pagamento (
 idpagamento INT IDENTITY NOT NULL,
-sequencia TINYINT NOT NULL,
 valor DECIMAL(12,2) NOT NULL,
 quantidade TINYINT NOT NULL,
 
 CONSTRAINT pk_pagamento PRIMARY KEY CLUSTERED (idpagamento)
+) ON [PRIMARY]
+
+IF EXISTS(SELECT 1 FROM sys.tables WHERE name = N'item')
+BEGIN
+	DROP TABLE Comercio.item;
+END
+
+CREATE TABLE Comercio.item (
+iditem INT IDENTITY NOT NULL,
+item VARCHAR(50) NOT NULL,
+
+CONSTRAINT pk_item PRIMARY KEY CLUSTERED (iditem),
+CONSTRAINT item_unico UNIQUE NONCLUSTERED (item)
 ) ON [PRIMARY]
 
 IF EXISTS(SELECT 1 FROM sys.tables WHERE name = N'item_pagamento')
@@ -225,13 +237,14 @@ END
 
 CREATE TABLE Comercio.item_pagamento (
 iditem_pagamento INT IDENTITY NOT NULL,
-item_pagamento VARCHAR(50) NOT NULL,
+sequencia TINYINT NOT NULL,
+item_iditem INT NOT NULL,
 forma_pagamento_idforma_pagamento INT NOT NULL,
 pagamento_idpagamento INT NOT NULL,
 
 CONSTRAINT pk_item_pagamento PRIMARY KEY CLUSTERED (iditem_pagamento),
 CONSTRAINT fk_forma_pagamento FOREIGN KEY (forma_pagamento_idforma_pagamento) REFERENCES Comercio.forma_pagamento(idforma_pagamento),
-CONSTRAINT item_pagamento_unico UNIQUE NONCLUSTERED (item_pagamento),
+CONSTRAINT fk_item_pagamento FOREIGN KEY (item_iditem) REFERENCES Comercio.item(iditem),
 CONSTRAINT fk_pagamento_itens FOREIGN KEY (pagamento_idpagamento) REFERENCES Comercio.pagamento(idpagamento)
 ) ON [PRIMARY]
 
@@ -243,7 +256,7 @@ END
 CREATE TABLE Comercio.cliente (
 idcliente INT IDENTITY NOT NULL,
 cpf CHAR(11) NOT NULL,
-nome VARCHAR(5) NOT NULL,
+nome VARCHAR(50) NOT NULL,
 endereco_idendereco INT NOT NULL,
 
 CONSTRAINT pk_cliente PRIMARY KEY CLUSTERED (idcliente),
@@ -288,15 +301,15 @@ INSERT Automovel.opcionais (opcionais) VALUES ('DVD Player'),('Banco de Couro'),
 INSERT Automovel.veiculos_has_opcionais (veiculo_idveiculo, opcionais_idopcionais)
 VALUES (1, 1),(1, 2),(2, 1),(3, 1),(3, 4),(5, 1),(5, 2),(5, 3),(5, 4),(6, 1),(6, 4);
 
-INSERT Localidade.estado (estado, uf) VALUES ('Minas Gerais', 'MG'),('Goias', 'GO'),('S√£o Paulo', 'SP'),('Rio de Janeiro', 'RJ'),('Mato Grosso', 'MT'),('Bahia', 'BA'),('Santa Catarina', 'SC'),('Alagoas', 'AL');
+INSERT Localidade.estado (estado, uf) VALUES ('Minas Gerais', 'MG'),('Goias', 'GO'),('S„o Paulo', 'SP'),('Rio de Janeiro', 'RJ'),('Mato Grosso', 'MT'),('Bahia', 'BA'),('Santa Catarina', 'SC'),('Alagoas', 'AL');
 
-INSERT Localidade.cidade (cidade, estado_idestado) VALUES ('Betim', 1),('Belo Horizonte', 1),('S√£o Paulo', 3),('Rio de Janeiro', 4),('Salvador', 6),('Buriti Alegre', 2),('Cajuru', 3),('Macei√≥', 8),('Feira de Santana', 6);
+INSERT Localidade.cidade (cidade, estado_idestado) VALUES ('Betim', 1),('Belo Horizonte', 1),('S„o Paulo', 3),('Rio de Janeiro', 4),('Salvador', 6),('Buriti Alegre', 2),('Cajuru', 3),('MaceiÛ', 8),('Feira de Santana', 6);
 
 INSERT Localidade.endereco (cep, logradouro, numero, bairro, cidade_idcidade) 
-VALUES ('30840760', 'Rua dos Securit√°rios', 115, 'Al√≠pio de Melo', 2),
+VALUES ('30840760', 'Rua dos Securit·rios', 115, 'AlÌpio de Melo', 2),
 ('32600140', 'Avenida Nossa Senhora do Carmo', 543, 'Centro', 1),
 ('01310200', 'Avenida Paulista', 1578, 'Bela Vista', 3),
-('57036010', 'Rua Doutor Aristeu Lopes', 0, 'Jati√∫ca', 8),
+('57036010', 'Rua Doutor Aristeu Lopes', 0, 'Jati˙ca', 8),
 ('44003276', 'Rua Comandante Almiro', 46, 'Serraria Brasil', 9),
 ('20540005', 'Rua Bar√£o de Mesquista', 141, 'Tijuca', 4);
 
@@ -310,7 +323,20 @@ VALUES ('Igor Henrique Martinelli de Heredia Ramos', 1),
 ('Jean Carlos Silva', 3),
 ('Marta Bruna Nogueira', 4);
 
-INSERT Comercio.forma_pagamento (forma_pagamento) VALUES ('Dinheiro'),('Cart√£o de Cr√©dito'),('Cart√£o de D√©bito'),('Cheque'),('Vale Alimenta√ß√£o'),('Empr√©stimo Banc√°rio');
+INSERT Comercio.forma_pagamento (forma_pagamento) VALUES ('Dinheiro'),('Cart„o de CrÈdito'),('Cart„o de DÈbito'),('Cheque'),('Vale AlimentaÁ„o'),('EmprÈstimo Banc·rio'),('Boleto');
 
-INSERT Comercio.pagamento (sequencia, valor, quantidade) VALUES (1, 1000.00, 1),(2, 500.00, 5),(3, 100.00, 10),
-(1, 1000.00, 5),(2, 500.00, 1),(3, 350.00, 24);
+INSERT Comercio.item (item) VALUES ('Entrada'),('Financiamento'),('VeÌculo de menor valor');
+
+INSERT Comercio.pagamento (valor, quantidade) VALUES (1000.00, 1),(500.00, 5),(100.00, 10),(1000.00, 5),(500.00, 1),(350.00, 24),(420.00, 18),(5000.00,1),(19900.00, 60);
+
+INSERT Comercio.item_pagamento (sequencia, item_iditem, pagamento_idpagamento, forma_pagamento_idforma_pagamento) 
+VALUES (1, 1, 1, 1),(2, 1, 4, 1),(3, 2, 2, 7),
+(1, 2, 3, 2),(2, 3, 5, 4),(3, 2, 1, 3),(4, 3, 2, 6),
+(1, 3, 3, 5),(2, 2, 2, 5);
+
+INSERT Comercio.cliente (cpf, nome, endereco_idendereco) VALUES ('13089902605', 'Igor Henrique Martinelli de Herehdia Ramos', 1),
+('46261543364', 'Estev„o Cristiano Marra', 2),
+('28673166420', 'Alexandre Moraes da Silva', 1),
+('92123632961', 'Danilo Antonio de Souza', 1),
+('68146470289', 'Henrique Thadeu Maluf', 3),
+('06387257476', 'Gilvan de Pinho Tavares', 4);
