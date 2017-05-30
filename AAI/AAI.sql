@@ -79,10 +79,10 @@ chassi VARCHAR(50) NOT NULL,
 placa CHAR(7) NOT NULL,
 ano_fabricacao INT NOT NULL,
 valor DECIMAL(10,2) NOT NULL,
-marca_idmarca INT NOT NULL
+modelo_idmodelo INT NOT NULL
 
 CONSTRAINT pk_veiculo PRIMARY KEY CLUSTERED (idveiculo),
-CONSTRAINT fk_marca FOREIGN KEY (marca_idmarca) REFERENCES Automovel.marca(idmarca),
+CONSTRAINT fk_modelo FOREIGN KEY (modelo_idmodelo) REFERENCES Automovel.modelo(idmodelo),
 CONSTRAINT chassi_unico UNIQUE NONCLUSTERED (chassi),
 CONSTRAINT placa_unica UNIQUE NONCLUSTERED (placa),
 CONSTRAINT validar_ano CHECK (Automovel.validarAno(ano_fabricacao) = 1)
@@ -291,7 +291,7 @@ INSERT Automovel.marca (marca) VALUES ('FIAT'),('Honda'),('Renault'),('Peugeot')
 
 INSERT Automovel.modelo (modelo, marca_idmarca) VALUES ('Palio', 1),('City', 2),('Celta', 7),('S10', 7),('Gol', 8),('Clio', 3),('Novo Uno', 1);
 
-INSERT Automovel.veiculo (chassi, placa, ano_fabricacao, valor, marca_idmarca)
+INSERT Automovel.veiculo (chassi, placa, ano_fabricacao, valor, modelo_idmodelo)
 VALUES ('1234567890', 'PLA1234', 1996, 19999.99, 2), ('0987654321', 'PLA9876', 2017, 35000.00, 5),
 ('1029384756', 'CAR0007', 2007, 8500.00, 1), ('4783920156', 'ABC1234', 2010, 15000.00, 6),
 ('4321567098', 'ZZZ9999', 1870, 120000.00, 3), ('42702490244', 'LUC6666', 1966, 66600.00, 4);
@@ -340,3 +340,11 @@ INSERT Comercio.cliente (cpf, nome, endereco_idendereco) VALUES ('13089902605', 
 ('92123632961', 'Danilo Antonio de Souza', 1),
 ('68146470289', 'Henrique Thadeu Maluf', 3),
 ('06387257476', 'Gilvan de Pinho Tavares', 4);
+
+INSERT Comercio.venda ([data], cliente_idcliente, desconto, pagamento_idpagamento, vendedor_idvendedor, veiculo_idveiculo) VALUES 
+(DATEADD(DAY, 2, GETDATE()), 1, .08, 1, 3, 1),
+(DATEADD(DAY, 1, GETDATE()), 2, .01, 2, 2, 3),
+(GETDATE(), 3, 3, 3, 3, 4),
+(DATEADD(DAY, 5, GETDATE()), 5, 4, 3, 2, 1),
+(DATEADD(DAY, 7, GETDATE()), 2, 4, 1, 3, 5),
+(GETDATE(), 1, 2, 3, 4, 5);
