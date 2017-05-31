@@ -40,13 +40,12 @@ AS
 	END;
 GO
 
-CREATE OR ALTER FUNCTION Comercio.validarDataVenda (@ano INT)
+CREATE OR ALTER FUNCTION Comercio.validarDataVenda (@ano DATE)
 RETURNS BIT
 WITH SCHEMABINDING
 AS
 	BEGIN
 		RETURN CASE 
-			       WHEN LEN(@ano) <> 4 THEN 0
 				   WHEN @ano < DATEADD(DAY, -7, GETDATE()) THEN 0 -- Máximo 7 dias atrás
 				   WHEN @ano > DATEADD(DAY, 7, GETDATE()) THEN 0 -- Máximo 7 dias para frente
 				   ELSE 1
@@ -218,19 +217,6 @@ CONSTRAINT pk_forma_pagamento PRIMARY KEY CLUSTERED (idforma_pagamento),
 CONSTRAINT forma_pagamento_unica UNIQUE NONCLUSTERED (forma_pagamento)
 ) ON [PRIMARY]
 
-IF EXISTS(SELECT 1 FROM sys.tables WHERE name = N'pagamento')
-BEGIN
-	DROP TABLE Comercio.pagamento;
-END
-
-CREATE TABLE Comercio.pagamento (
-idpagamento INT IDENTITY NOT NULL,
-valor DECIMAL(12,2) NOT NULL,
-quantidade TINYINT NOT NULL,
-
-CONSTRAINT pk_pagamento PRIMARY KEY CLUSTERED (idpagamento)
-) ON [PRIMARY]
-
 IF EXISTS(SELECT 1 FROM sys.tables WHERE name = N'item')
 BEGIN
 	DROP TABLE Comercio.item;
@@ -242,24 +228,6 @@ item VARCHAR(50) NOT NULL,
 
 CONSTRAINT pk_item PRIMARY KEY CLUSTERED (iditem),
 CONSTRAINT item_unico UNIQUE NONCLUSTERED (item)
-) ON [PRIMARY]
-
-IF EXISTS(SELECT 1 FROM sys.tables WHERE name = N'item_pagamento')
-BEGIN
-	DROP TABLE Comercio.item_pagamento;
-END
-
-CREATE TABLE Comercio.item_pagamento (
-iditem_pagamento INT IDENTITY NOT NULL,
-sequencia TINYINT NOT NULL,
-item_iditem INT NOT NULL,
-forma_pagamento_idforma_pagamento INT NOT NULL,
-pagamento_idpagamento INT NOT NULL,
-
-CONSTRAINT pk_item_pagamento PRIMARY KEY CLUSTERED (iditem_pagamento),
-CONSTRAINT fk_forma_pagamento FOREIGN KEY (forma_pagamento_idforma_pagamento) REFERENCES Comercio.forma_pagamento(idforma_pagamento),
-CONSTRAINT fk_item_pagamento FOREIGN KEY (item_iditem) REFERENCES Comercio.item(iditem),
-CONSTRAINT fk_pagamento_itens FOREIGN KEY (pagamento_idpagamento) REFERENCES Comercio.pagamento(idpagamento)
 ) ON [PRIMARY]
 
 IF EXISTS(SELECT 1 FROM sys.tables WHERE name = N'cliente')
@@ -290,15 +258,47 @@ desconto DECIMAL(5,2) NOT NULL DEFAULT 0.0,
 cliente_idcliente INT NOT NULL,
 veiculo_idveiculo INT NOT NULL,
 vendedor_idvendedor INT NOT NULL,
-pagamento_idpagamento INT NOT NULL,
 
 CONSTRAINT pk_venda PRIMARY KEY CLUSTERED (idvenda),
-CONSTRAINT venda_no_dia CHECK (Comercio.validarDataVenda([data]) = 1),
+CONSTRAINT venda_no_dia CHECK (Comercio.validarDataVenda(CAST([data] AS DATETIME)) = 1),
 CONSTRAINT fk_cliente_venda FOREIGN KEY (cliente_idcliente) REFERENCES Comercio.cliente(idcliente),
 CONSTRAINT fk_veiculo_venda FOREIGN KEY (veiculo_idveiculo) REFERENCES Automovel.veiculo(idveiculo),
-CONSTRAINT fk_vendedor_venda FOREIGN KEY (vendedor_idvendedor) REFERENCES Comercio.vendedor(idvendedor),
-CONSTRAINT fk_pagemento_venda FOREIGN KEY (pagamento_idpagamento) REFERENCES Comercio.pagamento(idpagamento)
+CONSTRAINT fk_vendedor_venda FOREIGN KEY (vendedor_idvendedor) REFERENCES Comercio.vendedor(idvendedor)
 ) ON [PRIMARY]
+
+IF EXISTS(SELECT 1 FROM sys.tables WHERE name = N'pagamento')
+BEGIN
+	DROP TABLE Comercio.pagamento;
+END
+
+CREATE TABLE Comercio.pagamento (
+idpagamento INT IDENTITY NOT NULL,
+valor DECIMAL(12,2) NOT NULL,
+quantidade TINYINT NOT NULL,
+venda_idvenda INT NOT NULL,
+
+CONSTRAINT pk_pagamento PRIMARY KEY CLUSTERED (idpagamento),
+CONSTRAINT fk_venda FOREIGN KEY (venda_idvenda) REFERENCES Comercio.venda(idvenda)
+) ON [PRIMARY]
+
+IF EXISTS(SELECT 1 FROM sys.tables WHERE name = N'item_pagamento')
+BEGIN
+	DROP TABLE Comercio.item_pagamento;
+END
+
+CREATE TABLE Comercio.item_pagamento (
+iditem_pagamento INT IDENTITY NOT NULL,
+sequencia TINYINT NOT NULL,
+item_iditem INT NOT NULL,
+forma_pagamento_idforma_pagamento INT NOT NULL,
+pagamento_idpagamento INT NOT NULL,
+
+CONSTRAINT pk_item_pagamento PRIMARY KEY CLUSTERED (iditem_pagamento),
+CONSTRAINT fk_forma_pagamento FOREIGN KEY (forma_pagamento_idforma_pagamento) REFERENCES Comercio.forma_pagamento(idforma_pagamento),
+CONSTRAINT fk_item_pagamento FOREIGN KEY (item_iditem) REFERENCES Comercio.item(iditem),
+CONSTRAINT fk_pagamento_itens FOREIGN KEY (pagamento_idpagamento) REFERENCES Comercio.pagamento(idpagamento)
+) ON [PRIMARY]
+
 
 SET NOCOUNT ON;
 INSERT Automovel.marca (marca) VALUES ('FIAT'),('Honda'),('Renault'),('Peugeot'),('Ferrari'),('BMW'),('Chevrolet'),('Volkswagen');
@@ -341,13 +341,6 @@ INSERT Comercio.forma_pagamento (forma_pagamento) VALUES ('Dinheiro'),('Cartão d
 
 INSERT Comercio.item (item) VALUES ('Entrada'),('Financiamento'),('Veículo de menor valor');
 
-INSERT Comercio.pagamento (valor, quantidade) VALUES (1000.00, 1),(500.00, 5),(100.00, 10),(1000.00, 5),(500.00, 1),(350.00, 24),(420.00, 18),(5000.00,1),(19900.00, 60);
-
-INSERT Comercio.item_pagamento (sequencia, item_iditem, pagamento_idpagamento, forma_pagamento_idforma_pagamento) 
-VALUES (1, 1, 1, 1),(2, 1, 4, 1),(3, 2, 2, 7),
-(1, 2, 3, 2),(2, 3, 5, 4),(3, 2, 1, 3),(4, 3, 2, 6),
-(1, 3, 3, 5),(2, 2, 2, 5);
-
 INSERT Comercio.cliente (cpf, nome, endereco_idendereco) VALUES ('13089902605', 'Igor Henrique Martinelli de Herehdia Ramos', 1),
 ('46261543364', 'Estevão Cristiano Marra', 2),
 ('28673166420', 'Alexandre Moraes da Silva', 1),
@@ -355,14 +348,28 @@ INSERT Comercio.cliente (cpf, nome, endereco_idendereco) VALUES ('13089902605', 
 ('68146470289', 'Henrique Thadeu Maluf', 3),
 ('06387257476', 'Gilvan de Pinho Tavares', 4);
 
-INSERT Comercio.venda ([data], cliente_idcliente, desconto, pagamento_idpagamento, vendedor_idvendedor, veiculo_idveiculo) VALUES 
-(DATEADD(DAY, 2, GETDATE()), 1, .08, 1, 3, 1),
-(DATEADD(DAY, 1, GETDATE()), 2, .01, 2, 2, 3),
-(GETDATE(), 3, 3, 3, 3, 4),
-(DATEADD(DAY, 5, GETDATE()), 5, 4, 3, 2, 1),
-(DATEADD(DAY, 7, GETDATE()), 2, 4, 1, 3, 5),
-(GETDATE(), 1, 2, 3, 4, 5);
+INSERT Comercio.venda ([data], desconto, cliente_idcliente, vendedor_idvendedor, veiculo_idveiculo) VALUES 
+(GETDATE(), 8.03, 1, 1, 1);
 
-SELECT * FROM Comercio.venda v
-Comercio.item_pagamento ip
-INNER JOIN 
+INSERT Comercio.pagamento (valor, quantidade, venda_idvenda) 
+VALUES (1000.00, 1, 3), (5000, 1, 3), (30000, 48, 3);
+
+INSERT Comercio.item_pagamento (sequencia, item_iditem, pagamento_idpagamento, forma_pagamento_idforma_pagamento) VALUES
+(1, 1, 4, 1),(2, 1, 4, 1),(3, 1, 4, 1);
+SET NOCOUNT ON;
+
+SELECT ip.sequencia SEQUENCIA, CONCAT(REPLACE(STR(i.iditem, 2), ' ', '0'), '-', i.item) ITEM, 
+	   CONCAT(REPLACE(STR(fp.idforma_pagamento, 2), ' ', '0'), '-', fp.forma_pagamento) 'FORMA DE PAGAMENTO', 
+	   CONCAT('R$ ', p.valor) VALOR, p.quantidade QTD, CONCAT('R$ ', CAST((p.valor / p.quantidade) AS DECIMAL(9,2))) 'VALOR PARCELA', 
+	   CONCAT('R$ ', CAST((p.quantidade * p.valor) AS DECIMAL(9,2))) 'VALOR FINAL'
+FROM Comercio.venda v
+INNER JOIN Comercio.cliente c ON c.idcliente = v.cliente_idcliente
+INNER JOIN Automovel.veiculo car ON car.idveiculo = v.veiculo_idveiculo
+INNER JOIN Comercio.vendedor ven ON ven.idvendedor = v.vendedor_idvendedor
+INNER JOIN Comercio.loja l ON l.idloja = ven.loja_idloja
+INNER JOIN Comercio.pagamento p ON p.venda_idvenda = v.idvenda
+INNER JOIN Comercio.item_pagamento ip ON ip.pagamento_idpagamento = p.idpagamento
+INNER JOIN Comercio.item i ON i.iditem = ip.item_iditem
+INNER JOIN Comercio.forma_pagamento fp ON fp.idforma_pagamento = ip.forma_pagamento_idforma_pagamento
+WHERE v.idvenda = 3
+ORDER BY sequencia ASC
