@@ -339,7 +339,7 @@ VALUES ('Igor Henrique Martinelli de Heredia Ramos', 1),
 
 INSERT Comercio.forma_pagamento (forma_pagamento) VALUES ('Dinheiro'),('Cartão de Crédito'),('Cartão de Débito'),('Cheque'),('Vale Alimentação'),('Empréstimo Bancário'),('Boleto');
 
-INSERT Comercio.item (item) VALUES ('Entrada'),('Financiamento'),('Veículo de menor valor');
+INSERT Comercio.item (item) VALUES ('Entrada'),('Financiamento'),('Veículo de menor valor'),('Veículo de maior valor'),('Troca sem troco');
 
 INSERT Comercio.cliente (cpf, nome, endereco_idendereco) VALUES ('13089902605', 'Igor Henrique Martinelli de Herehdia Ramos', 1),
 ('46261543364', 'Estevão Cristiano Marra', 2),
@@ -349,27 +349,35 @@ INSERT Comercio.cliente (cpf, nome, endereco_idendereco) VALUES ('13089902605', 
 ('06387257476', 'Gilvan de Pinho Tavares', 4);
 
 INSERT Comercio.venda ([data], desconto, cliente_idcliente, vendedor_idvendedor, veiculo_idveiculo) VALUES 
-(GETDATE(), 8.03, 1, 1, 1);
+(GETDATE(), 8.03, 1, 1, 1),
+(DATEADD(day, 1, GETDATE()), 1.00, 2, 2, 2),
+(GETDATE() + 2, 0.0, 4, 3, 3),
+(GETDATE() + 5, 20.0, 5, 5, 5),
+(GETDATE() - 2, 5.0, 4, 3, 4),
+(GETDATE() -4, 1.99, 3, 1, 6);
 
 INSERT Comercio.pagamento (valor, quantidade, venda_idvenda) 
-VALUES (1000.00, 1, 3), (5000, 1, 3), (30000, 48, 3);
+VALUES (1000.00, 1, 1), (5000, 1, 1), (30000, 48, 1),
+(500, 2, 2),(20000, 3, 2),
+(2000, 1, 3),(4000, 2, 3),(5000, 4, 3),(350, 1, 3),(1000, 3, 3);
 
-INSERT Comercio.item_pagamento (sequencia, item_iditem, pagamento_idpagamento, forma_pagamento_idforma_pagamento) VALUES
-(1, 1, 4, 1),(2, 1, 4, 1),(3, 1, 4, 1);
+INSERT Comercio.item_pagamento (sequencia, item_iditem, pagamento_idpagamento, forma_pagamento_idforma_pagamento)
+VALUES (1, 1, 1, 1),(2, 1, 2, 1),(3, 2, 3, 1),
+(1, 2, 4, 4),(2, 2, 4, 5),
+(1, 5, 5, 5);
 SET NOCOUNT ON;
 
-SELECT ip.sequencia SEQUENCIA, CONCAT(REPLACE(STR(i.iditem, 2), ' ', '0'), '-', i.item) ITEM, 
-	   CONCAT(REPLACE(STR(fp.idforma_pagamento, 2), ' ', '0'), '-', fp.forma_pagamento) 'FORMA DE PAGAMENTO', 
-	   CONCAT('R$ ', p.valor) VALOR, p.quantidade QTD, CONCAT('R$ ', CAST((p.valor / p.quantidade) AS DECIMAL(9,2))) 'VALOR PARCELA', 
-	   CONCAT('R$ ', CAST((p.quantidade * p.valor) AS DECIMAL(9,2))) 'VALOR FINAL'
+SELECT ip.sequencia																			AS 'SEQUENCIA',
+	   CONCAT(REPLACE(STR(i.iditem, 2), ' ', '0'), '-', i.item)								AS 'ITEM',
+	   CONCAT(REPLACE(STR(fp.idforma_pagamento, 2), ' ', '0'), '-', fp.forma_pagamento)		AS 'FORMA DE PAGAMENTO',
+	   CONCAT('R$ ', p.valor)																AS 'VALOR',
+	   p.quantidade																			AS 'QTD',
+	   CONCAT('R$ ', CAST((p.valor / p.quantidade) AS DECIMAL(9,2)))						AS 'VALOR PARCELA', 
+	   CONCAT('R$ ', CAST((p.quantidade * (p.valor / p.quantidade)) AS DECIMAL(9,2)))		AS 'VALOR FINAL'
 FROM Comercio.venda v
-INNER JOIN Comercio.cliente c ON c.idcliente = v.cliente_idcliente
-INNER JOIN Automovel.veiculo car ON car.idveiculo = v.veiculo_idveiculo
-INNER JOIN Comercio.vendedor ven ON ven.idvendedor = v.vendedor_idvendedor
-INNER JOIN Comercio.loja l ON l.idloja = ven.loja_idloja
 INNER JOIN Comercio.pagamento p ON p.venda_idvenda = v.idvenda
 INNER JOIN Comercio.item_pagamento ip ON ip.pagamento_idpagamento = p.idpagamento
 INNER JOIN Comercio.item i ON i.iditem = ip.item_iditem
 INNER JOIN Comercio.forma_pagamento fp ON fp.idforma_pagamento = ip.forma_pagamento_idforma_pagamento
-WHERE v.idvenda = 3
+WHERE v.idvenda = 1
 ORDER BY sequencia ASC
