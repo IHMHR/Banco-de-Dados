@@ -41,6 +41,12 @@ INSERT departamento (cod_depto, nom_depto) VALUES (6, 'Operações');
 SELECT d.cod_depto, d.nom_depto, d.num_matricula_gerente, d.dat_inicio_gerente FROM departamento d
 INSERT empregado (num_matricula, nom_empregado, dat_nascimento, dsc_endereco, nom_cidade, sig_uf, sex_empregado, val_salario, num_matricula_supervisor, cod_depto)
 VALUES (10, 'Novo Empregado', '19700405', 'Endereco', 'Belem', 'PA', 'M', 2000, 4, 6),
-(11, 'Novo Empregado', '19750824', 'Endereco', 'Recife', 'PE', 'F', 1200, 4, 6);
+(11, 'Nova Empregada', '19750824', 'Endereco', 'Recife', 'PE', 'F', 1200, 4, 6);
 SELECT e.num_matricula, e.nom_empregado, e.dat_nascimento, e.dsc_endereco, e.nom_cidade,
 e.sig_uf, e.sex_empregado, e.val_salario, e.num_matricula_supervisor, e.cod_depto FROM empregado e
+
+-- 6)
+UPDATE empregado SET cod_depto = (SELECT d.cod_depto FROM departamento d WHERE d.nom_depto = 'Vendas')
+WHERE num_matricula = 10
+SELECT e.num_matricula, e.nom_empregado, d.nom_depto FROM empregado e
+INNER JOIN departamento d ON e.cod_depto = d.cod_depto WHERE e.num_matricula > 9
