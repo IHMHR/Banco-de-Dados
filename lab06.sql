@@ -50,3 +50,13 @@ UPDATE empregado SET cod_depto = (SELECT d.cod_depto FROM departamento d WHERE d
 WHERE num_matricula = 10
 SELECT e.num_matricula, e.nom_empregado, d.nom_depto FROM empregado e
 INNER JOIN departamento d ON e.cod_depto = d.cod_depto WHERE e.num_matricula > 9
+
+-- 7)
+UPDATE empregado SET val_salario = val_salario * 1.15 WHERE (SELECT COUNT(1) FROM alocacao a WHERE a.num_matricula = empregado.num_matricula) > 3;
+
+-- 8)
+UPDATE empregado SET val_salario = val_salario * (SELECT CASE WHEN COUNT(1) >= 1 THEN (COUNT(1) * 100) / 100 WHEN COUNT(1) < 1 THEN 1 END FROM dependente d WHERE d.num_matricula = empregado.num_matricula)
+
+-- 9)
+DELETE FROM departamento WHERE cod_depto > 5;
+DELETE FROM empregado WHERE num_matricula > 9;
